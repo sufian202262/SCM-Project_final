@@ -1,6 +1,6 @@
 # Supply Chain Management System
 
-A comprehensive Supply Chain Management (SCM) solution built with ASP.NET Core MVC, Entity Framework Core, and SQLite.
+A comprehensive Supply Chain Management (SCM) solution built with ASP.NET Core MVC, Entity Framework Core, and SQL.
 
 ## 📋 Features
 
@@ -14,7 +14,7 @@ A comprehensive Supply Chain Management (SCM) solution built with ASP.NET Core M
 ## 🚀 Technologies Used
 
 - **Backend**: ASP.NET Core MVC
-- **Database**: SQLite
+- **Database**: SQL
 - **ORM**: Entity Framework Core
 - **Frontend**: 
   - HTML5, CSS3, JavaScript
@@ -24,7 +24,7 @@ A comprehensive Supply Chain Management (SCM) solution built with ASP.NET Core M
 
 ## 🛠️ Prerequisites
 
-- [.NET 6.0 SDK](https://dotnet.microsoft.com/download/dotnet/6.0)
+- [.NET 8.0+ SDK](https://dotnet.microsoft.com/download/dotnet/8.0)
 - [Visual Studio 2022](https://visualstudio.microsoft.com/) or [Visual Studio Code](https://code.visualstudio.com/)
 - [Git](https://git-scm.com/)
 
@@ -32,7 +32,7 @@ A comprehensive Supply Chain Management (SCM) solution built with ASP.NET Core M
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/SCM-Project_final.git
+   git clone https://github.com/sufian202262/SCM-Project_final.git
    cd SCM-Project_final/SupplyChainManagement
    ```
 
@@ -65,12 +65,9 @@ A comprehensive Supply Chain Management (SCM) solution built with ASP.NET Core M
 
 ## 🔒 Default Admin Credentials
 
-- **Username**: admin@scm.com
-- **Password**: Admin@123
+- **Username**: admin@gmail.com
+- **Password**: Admin1234
 
-## 📝 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## 🤝 Contributing
 
