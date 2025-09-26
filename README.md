@@ -2,7 +2,9 @@
 
 A comprehensive Supply Chain Management (SCM) solution built with ASP.NET Core MVC, Entity Framework Core, and SQL.
 
-##Live Demo: https://scmbysufian-gtcdbkfcesgbddgf.canadacentral-01.azurewebsites.net/
+## Live Demo: 
+https://scmbysufian-gtcdbkfcesgbddgf.canadacentral-01.azurewebsites.net/
+
 ## 📋 Features
 
 - **Inventory Management**: Track and manage product inventory
