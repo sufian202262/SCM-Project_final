@@ -1,0 +1,74 @@
+@model IEnumerable<SupplyChainManagement.Models.InventoryTransaction>
+@using SupplyChainManagement.Models
+@using SupplyChainManagement.Models.Enums
+@{
+    ViewData["Title"] = "Inventory Transactions";
+    var whId = ViewData["WarehouseId"] as int?;
+    var prodId = ViewData["ProductId"] as int?;
+    var from = ViewData["From"] as string;
+    var to = ViewData["To"] as string;
+    var type = ViewData["Type"] as InventoryTransactionType?;
+}
+<h1>Inventory Transactions</h1>
+<form method="get" class="row g-2 mb-3">
+    <div class="col-md-2">
+        <label class="form-label">WarehouseId</label>
+        <input class="form-control" type="number" name="warehouseId" value="@whId" />
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">ProductId</label>
+        <input class="form-control" type="number" name="productId" value="@prodId" />
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">From</label>
+        <input class="form-control" type="date" name="from" value="@from" />
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">To</label>
+        <input class="form-control" type="date" name="to" value="@to" />
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Type</label>
+        <select class="form-select" name="type">
+            <option value="">All</option>
+            @foreach (var t in Enum.GetValues(typeof(InventoryTransactionType)).Cast<InventoryTransactionType>())
+            {
+                <option value="@t" selected="@(type.HasValue && type.Value==t ? "selected" : null)">@t</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-2 d-flex align-items-end">
+        <button class="btn btn-primary w-100" type="submit">Filter</button>
+    </div>
+</form>
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Created</th>
+            <th>Type</th>
+            <th>Warehouse</th>
+            <th>Product</th>
+            <th class="text-end">Qty</th>
+            <th>Reference</th>
+            <th>By</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var t in Model)
+    {
+        <tr>
+            <td>@t.Id</td>
+            <td>@t.CreatedAt.ToLocalTime()</td>
+            <td><span class="badge bg-secondary">@t.Type</span></td>
+            <td>@t.WarehouseId</td>
+            <td>@t.Product?.Name (@t.ProductId)</td>
+            <td class="text-end">@t.Quantity</td>
+            <td>@t.ReferenceType #@t.ReferenceId</td>
+            <td>@t.PerformedByUser?.UserName</td>
+            <td><a class="btn btn-sm btn-outline-info" asp-action="Details" asp-route-id="@t.Id">Details</a></td>
+        </tr>
+    }
+    </tbody>
+</table>

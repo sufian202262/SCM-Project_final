@@ -1,0 +1,153 @@
+@model SupplyChainManagement.Models.ViewModels.SupplierInvoicesViewModel
+@using SupplyChainManagement.Models.Enums
+
+@{
+    ViewData["Title"] = "Invoices & Payments";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Invoices & Payments</h1>
+    <span class="badge bg-success fs-6">@Model.Invoices.Count() Invoices</span>
+  </div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-success">@Model.TotalInvoiced.ToString("C")</h5>
+                <p class="card-text">Total Invoiced</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-info">@Model.Invoices.Count()</h5>
+                <p class="card-text">Invoices</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-warning">@Model.TotalUnpaid.ToString("C")</h5>
+                <p class="card-text">Unpaid</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title text-success">@Model.TotalPaid.ToString("C")</h5>
+                <p class="card-text">Paid</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.Invoices == null || !Model.Invoices.Any())
+{
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> No completed orders for invoicing yet.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Invoice #</th>
+                    <th>Order #</th>
+                    <th>Issued</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Paid At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var inv in Model.Invoices.OrderByDescending(i => i.IssuedAt))
+                {
+                    <tr>
+                        <td><strong>#@inv.Id</strong></td>
+                        <td><a href="@Url.Action("Details", "Orders", new { id = inv.OrderId })" class="text-decoration-none">#@inv.OrderId</a></td>
+                        <td>@inv.IssuedAt.ToLocalTime().ToString("MMM dd, yyyy")</td>
+                        <td><strong>@inv.Amount.ToString("C")</strong></td>
+                        <td><span class="badge @(inv.Status == SupplyChainManagement.Models.InvoiceStatus.Paid ? "bg-success" : (inv.Status == SupplyChainManagement.Models.InvoiceStatus.PartiallyPaid ? "bg-warning" : "bg-secondary"))">@inv.Status</span></td>
+                        <td>@inv.PaidAt?.ToLocalTime().ToString("MMM dd, yyyy")</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="@Url.Action("Details", "Orders", new { id = inv.OrderId })" class="btn btn-outline-info btn-sm">
+                                    <i class="fas fa-eye"></i> Details
+                                </a>
+                                @if (inv.Status != SupplyChainManagement.Models.InvoiceStatus.Paid)
+                                {
+                                    <form asp-action="MarkInvoicePaid" method="post" class="d-inline ms-1">
+                                        <input type="hidden" name="id" value="@inv.Id" />
+                                        <button type="submit" class="btn btn-success btn-sm">Mark Paid</button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<div class="card mt-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Create Invoice</span>
+    </div>
+    <div class="card-body">
+        @if (Model.EligibleOrders == null || !Model.EligibleOrders.Any())
+        {
+            <div class="text-muted">No eligible orders found (Delivered/Shipped without invoice).</div>
+        }
+        else
+        {
+            <form asp-action="CreateInvoice" method="post" class="row g-2 align-items-end">
+                <div class="col-md-4">
+                    <label class="form-label">Order</label>
+                    <select name="orderId" class="form-select">
+                        @foreach (var o in Model.EligibleOrders.OrderByDescending(o => o.CreatedAt))
+                        {
+                            <option value="@o.Id">#@o.Id • @o.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd") • @o.TotalAmount.ToString("C")</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Due Date (optional)</label>
+                    <input type="date" name="dueDate" class="form-control" />
+                </div>
+                <div class="col-md-3">
+                    <button type="submit" class="btn btn-primary">Create Invoice</button>
+                </div>
+            </form>
+        }
+    </div>
+</div>
+
+<div class="mt-4">
+    <a asp-action="OrdersReceived" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Orders
+    </a>
+</div>

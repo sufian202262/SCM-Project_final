@@ -1,0 +1,118 @@
+@model IEnumerable<SupplyChainManagement.Models.Shipment>
+@using SupplyChainManagement.Models
+@using SupplyChainManagement.Models.Enums
+@{
+    ViewData["Title"] = "Shipments";
+
+    string BadgeFor(ShipmentStatus status) => status switch
+    {
+        ShipmentStatus.Pending => "bg-secondary",
+        ShipmentStatus.InTransit => "bg-info",
+        ShipmentStatus.Delivered => "bg-success",
+        ShipmentStatus.Delayed => "bg-warning text-dark",
+        ShipmentStatus.Cancelled => "bg-danger",
+        _ => "bg-secondary"
+    };
+}
+
+<div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+    <div class="d-flex align-items-center gap-2">
+        <h1 class="mb-0"><i class="fas fa-truck-fast"></i> Shipments</h1>
+        <span class="badge bg-primary-subtle text-primary border border-primary">@Model?.Count() total</span>
+    </div>
+    <div class="d-flex gap-2">
+        <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <input id="shipmentSearch" type="text" class="form-control" placeholder="Search by order, courier, tracking, status..." />
+        </div>
+        @if (User.IsInRole(SupplyChainManagement.Models.Enums.UserRoles.Supplier))
+        {
+            <a class="btn btn-primary" asp-action="Create"><i class="fas fa-plus"></i> Create Shipment</a>
+        }
+    </div>
+</div>
+
+@if (!(Model?.Any() ?? false))
+{
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> No shipments found.
+    </div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="shipmentsTable" class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Order</th>
+                            <th>Status</th>
+                            <th>Courier</th>
+                            <th>Tracking</th>
+                            <th>Shipped</th>
+                            <th>Delivered</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var s in Model)
+                    {
+                        <tr>
+                            <td>@s.Id</td>
+                            <td>
+                                <span class="badge bg-light text-dark border">#@s.OrderId</span>
+                            </td>
+                            <td>
+                                <span class="badge @BadgeFor(s.Status)">@s.Status</span>
+                            </td>
+                            <td>@(string.IsNullOrWhiteSpace(s.Courier) ? "-" : s.Courier)</td>
+                            <td>
+                                @if (!string.IsNullOrWhiteSpace(s.TrackingNumber))
+                                {
+                                    <span class="text-nowrap"><i class="fas fa-hashtag text-secondary"></i> @s.TrackingNumber</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td class="text-nowrap">@(s.ShippedAt?.ToLocalTime().ToString("g") ?? "-")</td>
+                            <td class="text-nowrap">@(s.DeliveredAt?.ToLocalTime().ToString("g") ?? "-")</td>
+                            <td class="text-end">
+                                <div class="btn-group" role="group">
+                                    <a class="btn btn-sm btn-outline-info" asp-action="Details" asp-route-id="@s.Id"><i class="fas fa-eye"></i> Details</a>
+                                    @if (User.IsInRole(SupplyChainManagement.Models.Enums.UserRoles.Supplier))
+                                    {
+                                        <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@s.Id"><i class="fas fa-edit"></i> Edit</a>
+                                        <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@s.Id"><i class="fas fa-trash"></i> Delete</a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            const search = document.getElementById('shipmentSearch');
+            const table = document.getElementById('shipmentsTable');
+            if (!search || !table) return;
+            const rows = Array.from(table.querySelectorAll('tbody tr'));
+            search.addEventListener('input', function () {
+                const q = this.value.toLowerCase();
+                rows.forEach(r => {
+                    const text = r.innerText.toLowerCase();
+                    r.style.display = text.includes(q) ? '' : 'none';
+                });
+            });
+        })();
+    </script>
+}

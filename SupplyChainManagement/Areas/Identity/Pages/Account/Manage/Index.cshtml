@@ -1,0 +1,76 @@
+@page
+@model SupplyChainManagement.Areas.Identity.Pages.Account.Manage.IndexModel
+@{
+    ViewData["Title"] = "Account settings";
+}
+
+<h1 class="mb-3">Account settings</h1>
+
+@if (TempData["StatusMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["StatusMessage"]</div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+}
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card">
+            <div class="card-header">Profile</div>
+            <div class="card-body">
+                <form method="post">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="form-label">First name</label>
+                            <input class="form-control" asp-for="Input.FirstName" />
+                            <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Last name</label>
+                            <input class="form-control" asp-for="Input.LastName" />
+                            <span asp-validation-for="Input.LastName" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone number</label>
+                            <input class="form-control" asp-for="Input.PhoneNumber" />
+                            <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary mt-3">Save changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card mb-3">
+            <div class="card-header">Account</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-5">Email</dt>
+                    <dd class="col-7">@Model.Email</dd>
+                    <dt class="col-5">Username</dt>
+                    <dd class="col-7">@Model.UserName</dd>
+                    <dt class="col-5">Roles</dt>
+                    <dd class="col-7">@(Model.Roles?.Any() == true ? string.Join(", ", Model.Roles) : "-")</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-header">Organization</div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    
+                    <dt class="col-5">Warehouse</dt>
+                    <dd class="col-7">@(!string.IsNullOrWhiteSpace(Model.WarehouseName) ? Model.WarehouseName : "-")</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

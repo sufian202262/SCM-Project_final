@@ -1,0 +1,12 @@
+@using Microsoft.AspNetCore.Identity
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    var current = (string)ViewContext.RouteData.Values["page"]!;
+    string active(string page) => string.Equals(current, page, System.StringComparison.OrdinalIgnoreCase) ? "active" : string.Empty;
+}
+
+<nav class="nav flex-column nav-pills">
+    <a class="nav-link @active("/Account/Manage/Index")" asp-page="/Account/Manage/Index">Profile</a>
+    <a class="nav-link @active("/Account/Manage/ChangePassword")" asp-page="/Account/Manage/ChangePassword">Change password</a>
+    @* Intentionally removed Personal Data and other default links *@
+</nav>

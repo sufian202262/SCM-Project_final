@@ -1,0 +1,293 @@
+@model SupplyChainManagement.Models.Order
+@using SupplyChainManagement.Models
+@using SupplyChainManagement.Models.Enums
+@using OrderStatus = SupplyChainManagement.Models.Enums.OrderStatus
+@{
+    ViewData["Title"] = "Order Details";
+    var total = Model.Items?.Sum(i => i.UnitPrice * i.Quantity) ?? 0m;
+    string badgeClass = Model.Status switch
+    {
+        OrderStatus.Draft => "bg-light text-dark",
+        OrderStatus.PendingApproval => "bg-warning",
+        OrderStatus.Approved => "bg-info",
+        OrderStatus.SentToSupplier => "bg-primary",
+        OrderStatus.ConfirmedBySupplier => "bg-primary",
+        OrderStatus.Processing => "bg-secondary",
+        OrderStatus.Shipped => "bg-success",
+        OrderStatus.Delivered => "bg-success",
+        OrderStatus.Rejected => "bg-danger",
+        OrderStatus.Cancelled => "bg-danger",
+        _ => "bg-secondary"
+    };
+}
+<div class="d-flex justify-content-between align-items-center mb-1">
+    <h1 class="mb-0"><i class="fas fa-file-invoice"></i> Order <span class="badge bg-light text-dark border">#@Model.Id</span></h1>
+    <span class="badge @badgeClass">@Model.Status</span>
+    </div>
+<p class="text-muted">Created @Model.CreatedAt.ToLocalTime().ToString("g")</p>
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-list"></i> Items</span>
+                <span class="badge @badgeClass">@Model.Status</span>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Unit Price</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var item in Model.Items ?? Enumerable.Empty<OrderItem>())
+                    {
+                        <tr>
+                            <td>@item.Product?.Name</td>
+                            <td>@item.Quantity</td>
+                            <td>@item.UnitPrice.ToString("C")</td>
+                            <td class="text-nowrap">@(item.UnitPrice * item.Quantity)</td>
+                        </tr>
+                    }
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <th colspan="3" class="text-end">Total</th>
+                            <th>@total.ToString("C")</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        <div class="mt-3">
+            <a class="btn btn-secondary" asp-action="Index">Back to List</a>
+            @if ((Model.Status == OrderStatus.Draft || Model.Status == OrderStatus.PendingApproval)
+                && User.IsInRole(UserRoles.WarehouseStaff))
+            {
+                <a class="btn btn-outline-primary" asp-action="EditItems" asp-route-id="@Model.Id">Edit Items</a>
+            }
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">Actions</div>
+            <div class="card-body">
+                @* Admin can approve/reject while PendingApproval *@
+                @if (Model.Status == OrderStatus.PendingApproval && User.IsInRole(UserRoles.Admin))
+                {
+                    <form asp-action="Approve" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-success">Approve</button>
+                    </form>
+                    <form asp-action="Reject" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-danger">Reject</button>
+                    </form>
+                }
+                @* Admin can Send to Supplier when Approved *@
+                @if (Model.Status == OrderStatus.Approved && User.IsInRole(UserRoles.Admin))
+                {
+                    <form asp-action="SendToSupplier" method="post" class="d-inline mt-2">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-warning">Send to Supplier</button>
+                    </form>
+                }
+                @* Supplier can Confirm when SentToSupplier *@
+                @if (Model.Status == OrderStatus.SentToSupplier && User.IsInRole(UserRoles.Supplier))
+                {
+                    <form asp-action="SupplierConfirm" method="post" class="d-inline mt-2">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-primary">Confirm Order</button>
+                    </form>
+                }
+                @* Supplier can mark Processing after confirming *@
+                @if (Model.Status == OrderStatus.ConfirmedBySupplier && User.IsInRole(UserRoles.Supplier))
+                {
+                    <form asp-action="SupplierStartProcessing" method="post" class="d-inline mt-2">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-info">Processing</button>
+                    </form>
+                }
+                @* Warehouse can Process when Approved (Admin cannot) *@
+                @if (Model.Status == OrderStatus.Approved && User.IsInRole(UserRoles.WarehouseStaff))
+                {
+                    <form asp-action="Process" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-primary">Processing</button>
+                    </form>
+                }
+                @* Warehouse/Admin can Ship when Processing *@
+                @if (Model.Status == OrderStatus.Processing && (User.IsInRole(UserRoles.Admin)))
+                {
+                    <form asp-action="Ship" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-warning">Ship Order</button>
+                    </form>
+                }
+
+                @* WarehouseStaff can Edit/Cancel while Draft or PendingApproval *@
+                @if ((Model.Status == OrderStatus.Draft || Model.Status == OrderStatus.PendingApproval) && User.IsInRole(UserRoles.WarehouseStaff))
+                {
+                    <a class="btn btn-outline-primary mt-2" asp-action="EditItems" asp-route-id="@Model.Id">Edit Items</a>
+                    <form asp-action="Cancel" method="post" class="d-inline mt-2">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Cancel this order?');">Cancel Order</button>
+                    </form>
+                }
+
+                @* Supplier can cancel at any time (except already Cancelled or Delivered) *@
+                @if ((Model.Status != OrderStatus.Cancelled && Model.Status != OrderStatus.Delivered) && User.IsInRole(UserRoles.Supplier))
+                {
+                    <form asp-action="Cancel" method="post" class="d-inline mt-2">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Cancel this order?');">Cancel Order</button>
+                    </form>
+                }
+            </div>
+        </div>
+        @* Payment options *@
+        @if (User.IsInRole(SupplyChainManagement.Models.Enums.UserRoles.WarehouseStaff)
+            && Model.Status != OrderStatus.Cancelled
+            && Model.Status != OrderStatus.Rejected
+            && Model.Status != OrderStatus.Delivered)
+        {
+            <div class="card mt-3">
+                <div class="card-header">Payment</div>
+                <div class="card-body">
+                    <div class="small text-muted mb-2">Record a payment for this order.</div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <form asp-action="Pay" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <input type="hidden" name="method" value="Cash" />
+                            <button type="submit" class="btn btn-outline-secondary"><i class="fas fa-money-bill-wave"></i> Cash</button>
+                        </form>
+                        <form asp-action="Pay" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <input type="hidden" name="method" value="Card" />
+                            <button type="submit" class="btn btn-outline-primary"><i class="fas fa-credit-card"></i> Card</button>
+                        </form>
+                        <form asp-action="Pay" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <input type="hidden" name="method" value="Bank Transfer" />
+                            <button type="submit" class="btn btn-outline-dark"><i class="fas fa-building-columns"></i> Bank Transfer</button>
+                        </form>
+                        <form asp-action="Pay" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <input type="hidden" name="method" value="Mobile Wallet" />
+                            <button type="submit" class="btn btn-outline-success"><i class="fas fa-mobile-screen"></i> Mobile Wallet</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+        @* Payments summary and history *@
+        <div class="card mt-3">
+            <div class="card-header">Payments</div>
+            <div class="card-body">
+                @{
+                    var payments = ViewData["Payments"] as IEnumerable<SupplyChainManagement.Models.Payment> ?? Enumerable.Empty<SupplyChainManagement.Models.Payment>();
+                    var amountPaid = (decimal)(ViewData["AmountPaid"] ?? 0m);
+                    var amountDue = (decimal)(ViewData["AmountDue"] ?? 0m);
+                }
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="small text-muted">Amount Paid</div>
+                    <div class="fw-semibold">@amountPaid.ToString("C")</div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="small text-muted">Amount Due</div>
+                    <div class="fw-semibold">@amountDue.ToString("C")</div>
+                </div>
+
+                @if (payments.Any())
+                {
+                    <hr />
+                    <ul class="list-group list-group-flush">
+                        @foreach (var p in payments)
+                        {
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-semibold">@p.Method - @p.Status</div>
+                                    <div class="small text-muted">Txn: @p.TransactionId · @p.CreatedAt.ToLocalTime()</div>
+                                    @if (!string.IsNullOrWhiteSpace(p.Notes))
+                                    {
+                                        <div class="small text-muted">@p.Notes</div>
+                                    }
+                                </div>
+                                <div class="fw-semibold">@p.Amount.ToString("C")</div>
+                            </li>
+                        }
+                    </ul>
+                }
+
+                @if (User.IsInRole(SupplyChainManagement.Models.Enums.UserRoles.WarehouseStaff) && amountDue > 0)
+                {
+                    <div class="mt-3">
+                        <form asp-controller="Payments" asp-action="Start" method="post" class="d-inline">
+                            <input type="hidden" name="orderId" value="@Model.Id" />
+                            <input type="hidden" name="method" value="Bkash" />
+                            <button type="submit" class="btn btn-success"><i class="fas fa-mobile-screen"></i> Pay with bKash</button>
+                        </form>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="card mt-3">
+            <div class="card-header">Shipments</div>
+            <div class="card-body">
+                @{
+                    var shipments = ViewData["Shipments"] as IEnumerable<SupplyChainManagement.Models.Shipment> ?? Enumerable.Empty<SupplyChainManagement.Models.Shipment>();
+                }
+                @if (!shipments.Any())
+                {
+                    <div class="text-muted">No shipments yet.</div>
+                }
+                else
+                {
+                    <ul class="list-group list-group-flush">
+                    @foreach (var s in shipments)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>
+                                <span class="badge bg-light text-dark border">#@s.Id</span>
+                                <span class="ms-2">@s.Status</span>
+                            </span>
+                            <a class="btn btn-sm btn-outline-info" asp-controller="Shipments" asp-action="Details" asp-route-id="@s.Id"><i class="fas fa-eye"></i> Details</a>
+                        </li>
+                    }
+                    </ul>
+                }
+                @if (User.IsInRole(SupplyChainManagement.Models.Enums.UserRoles.Supplier))
+                {
+                    var canCreateShipment = !shipments.Any() && (Model.Status == OrderStatus.Approved || Model.Status == OrderStatus.Processing || Model.Status == OrderStatus.ConfirmedBySupplier);
+                    if (canCreateShipment)
+                    {
+                        <div class="mt-2">
+                            <a class="btn btn-sm btn-primary" asp-controller="Shipments" asp-action="Create" asp-route-orderId="@Model.Id">Create Shipment</a>
+                        </div>
+                    }
+                    else if (shipments.Any())
+                    {
+                        <div class="mt-2 text-muted small">Shipment already created for this order.</div>
+                    }
+                }
+            </div>
+        </div>
+        <div class="card mt-3">
+            <div class="card-header">Supplier</div>
+            <div class="card-body">
+                <div class="fw-semibold">@Model.Supplier?.CompanyName</div>
+                @if (!string.IsNullOrWhiteSpace(Model.Supplier?.Email))
+                {
+                    <div><i class="fas fa-envelope text-secondary"></i> <a href="mailto:@Model.Supplier.Email">@Model.Supplier.Email</a></div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

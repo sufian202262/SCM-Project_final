@@ -1,0 +1,241 @@
+@model SupplyChainManagement.Models.SupplierDashboardViewModel
+@using SupplyChainManagement.Models.Enums
+@{
+    ViewData["Title"] = "Supplier Dashboard";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h2 class="mb-0">Welcome, @Model.SupplierName</h2>
+        <div class="text-muted">Manage orders, shipments, catalog and invoices at a glance</div>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-primary" asp-controller="Supplier" asp-action="CreateProduct">Add Product</a>
+        <a class="btn btn-outline-primary" asp-controller="Orders" asp-action="Index" asp-route-view="received">View Orders</a>
+    </div>
+</div>
+
+<div class="row g-3 mb-2">
+    <div class="col-6 col-md-2">
+        <div class="card text-bg-light border-0 h-100">
+            <div class="card-body py-3">
+                <div class="small text-muted">Received</div>
+                <div class="fs-4 fw-semibold">@Model.OrdersReceivedCount</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="card text-bg-primary border-0 h-100">
+            <div class="card-body py-3">
+                <div class="small">Confirmed</div>
+                <div class="fs-4 fw-semibold">@Model.OrdersConfirmedCount</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="card text-bg-secondary border-0 h-100">
+            <div class="card-body py-3">
+                <div class="small">Processing</div>
+                <div class="fs-4 fw-semibold">@Model.OrdersProcessingCount</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="card text-bg-success border-0 h-100">
+            <div class="card-body py-3">
+                <div class="small">Shipped</div>
+                <div class="fs-4 fw-semibold">@Model.OrdersShippedCount</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="card text-bg-success border-0 h-100">
+            <div class="card-body py-3">
+                <div class="small">Delivered</div>
+                <div class="fs-4 fw-semibold">@Model.OrdersDeliveredCount</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="card text-bg-light border-0 h-100">
+            <div class="card-body py-3">
+                <div class="small text-muted">Active Products</div>
+                <div class="fs-4 fw-semibold">@Model.ActiveProductsCount</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-12 col-md-6">
+        <div class="card bg-info border-0 h-100">
+            <div class="card-body py-3">
+                <div class="small">Total Sales</div>
+                <div class="fs-3 fw-semibold">@Model.TotalSales</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6">
+        <div class="card text-bg-info border-0 h-100">
+            <div class="card-body py-3">
+                <div class="small">Total Revenue</div>
+                <div class="fs-3 fw-semibold">@Model.TotalRevenue.ToString("C")</div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Recent Orders</span>
+                <a class="btn btn-sm btn-outline-secondary" asp-controller="Orders" asp-action="Index" asp-route-view="received">All Orders</a>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.RecentOrders == null || !Model.RecentOrders.Any())
+                {
+                    <div class="p-3 text-muted">No recent orders.</div>
+                }
+                else
+                {
+                    <table class="table mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Warehouse</th>
+                                <th>Status</th>
+                                <th class="text-end">Items</th>
+                                <th>Created</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var o in Model.RecentOrders)
+                        {
+                            var badgeClass = o.Status switch
+                            {
+                                OrderStatus.PendingApproval => "bg-warning",
+                                OrderStatus.ConfirmedBySupplier => "bg-primary",
+                                OrderStatus.Processing => "bg-secondary",
+                                OrderStatus.Shipped => "bg-success",
+                                OrderStatus.Delivered => "bg-success",
+                                OrderStatus.Rejected => "bg-danger",
+                                OrderStatus.Cancelled => "bg-danger",
+                                _ => "bg-info"
+                            };
+                            <tr>
+                                <td>@o.Id</td>
+                                <td>@o.Warehouse?.Name</td>
+                                <td><span class="badge @badgeClass">@o.Status</span></td>
+                                <td class="text-end">@o.Items?.Count</td>
+                                <td>@o.CreatedAt.ToLocalTime()</td>
+                                <td>
+                                    <a class="btn btn-sm btn-outline-info" asp-controller="Orders" asp-action="Details" asp-route-id="@o.Id">Details</a>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Recent Shipments</span>
+                <a class="btn btn-sm btn-outline-secondary" asp-controller="Supplier" asp-action="ShipmentUpdates">All Shipments</a>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.RecentShipments == null || !Model.RecentShipments.Any())
+                {
+                    <div class="p-3 text-muted">No shipments yet.</div>
+                }
+                else
+                {
+                    <ul class="list-group list-group-flush">
+                        @foreach (var s in Model.RecentShipments)
+                        {
+                            var badge = s.Status switch
+                            {
+                                ShipmentStatus.Delivered => "bg-success",
+                                ShipmentStatus.InTransit => "bg-primary",
+                                ShipmentStatus.Pending => "bg-warning",
+                                ShipmentStatus.Delayed => "bg-danger",
+                                ShipmentStatus.Cancelled => "bg-dark",
+                                ShipmentStatus.Returned => "bg-secondary",
+                                _ => "bg-secondary"
+                            };
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-semibold">Order #@s.OrderId</div>
+                                    <div class="small text-muted">@s.CreatedAt.ToLocalTime()</div>
+                                </div>
+                                <span class="badge @badge">@s.Status</span>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mt-1">
+    <div class="col-lg-8">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Featured Products</span>
+                <a class="btn btn-sm btn-outline-secondary" asp-controller="Supplier" asp-action="ProductCatalog">Product Catalog</a>
+            </div>
+            <div class="card-body p-0">
+                @if (Model.FeaturedProducts == null || !Model.FeaturedProducts.Any())
+                {
+                    <div class="p-3 text-muted">No products yet. Start by adding your products.</div>
+                }
+                else
+                {
+                    <table class="table mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>SKU</th>
+                                <th>Price</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var p in Model.FeaturedProducts)
+                        {
+                            <tr>
+                                <td>@p.Name</td>
+                                <td>@p.SKU</td>
+                                <td>@p.Price.ToString("C")</td>
+                                <td>
+                                    <a class="btn btn-sm btn-outline-primary" asp-controller="Supplier" asp-action="EditProduct" asp-route-id="@p.Id">Edit</a>
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Quick Links</span>
+            </div>
+            <div class="list-group list-group-flush">
+                <a class="list-group-item list-group-item-action" asp-controller="Orders" asp-action="Index" asp-route-view="received">Orders Received</a>
+                <a class="list-group-item list-group-item-action" asp-controller="Supplier" asp-action="ConfirmOrders">Confirm Orders</a>
+                <a class="list-group-item list-group-item-action" asp-controller="Supplier" asp-action="ShipmentUpdates">Shipment Updates</a>
+                <a class="list-group-item list-group-item-action" asp-controller="Supplier" asp-action="ProductCatalog">Product Catalog</a>
+                <a class="list-group-item list-group-item-action" asp-controller="Supplier" asp-action="InvoicesPayments">Invoices & Payments</a>
+            </div>
+        </div>
+    </div>
+</div>

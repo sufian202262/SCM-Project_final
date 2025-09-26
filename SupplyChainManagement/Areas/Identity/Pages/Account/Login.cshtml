@@ -1,0 +1,87 @@
+@page
+@model SupplyChainManagement.Areas.Identity.Pages.Account.LoginModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<style>
+  .auth-bg {
+    min-height: 100vh;
+    background: #f5f7fb; /* simple, clean background */
+    display: flex; align-items: center; justify-content: center;
+    padding: 2rem 1rem;
+  }
+  .auth-card {
+    border: 0; border-radius: 1rem; overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,.15);
+  }
+  .auth-card .header { background: #0d6efd; }
+  .form-icon { position: absolute; left: .6rem; top: 73%; transform: translateY(-50%); color: #64748b; pointer-events: none; z-index: 3; }
+  .with-icon { padding-left: 2.25rem; }
+  .input-group.position-relative .with-icon { padding-left: 2.25rem; }
+  .link-muted { color: rgba(255,255,255,.9); }
+  .link-muted:hover { color: #fff; }
+</style>
+
+<div class="auth-bg">
+  <div class="col-12 col-md-7 col-lg-5">
+    <div class="card auth-card">
+      <div class="header p-4 text-white">
+        <h2 class="mb-0 text-center">Welcome back</h2>
+        <div class="opacity-75 text-center">Sign in to continue</div>
+      </div>
+      <div class="card-body p-4">
+        <form method="post">
+          <input type="hidden" asp-for="ReturnUrl" />
+          <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+          <div class="mb-3 position-relative">
+            <label asp-for="Input.Email" class="form-label">Email</label>
+            <i class="fa-solid fa-envelope form-icon"></i>
+            <input asp-for="Input.Email" class="form-control with-icon" autocomplete="username" placeholder="you@company.com" />
+            <span asp-validation-for="Input.Email" class="text-danger"></span>
+          </div>
+
+          <div class="mb-3 position-relative">
+            <label asp-for="Input.Password" class="form-label">Password</label>
+            <i class="fa-solid fa-lock form-icon"></i>
+            <div class="input-group position-relative">
+              <input asp-for="Input.Password" class="form-control with-icon" autocomplete="current-password" placeholder="••••••••" id="passwordInput" />
+              <button type="button" class="btn btn-outline-secondary" id="togglePwd"><i class="fa-regular fa-eye"></i></button>
+            </div>
+            <span asp-validation-for="Input.Password" class="text-danger"></span>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="form-check">
+              <input class="form-check-input" asp-for="Input.RememberMe" id="rememberMe" />
+              <label class="form-check-label" for="rememberMe">Remember me</label>
+            </div>
+            <a class="small" asp-page="/Account/ForgotPassword">Forgot password?</a>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">Sign in</button>
+
+          
+
+          <div class="text-center mt-3 small">
+            Don’t have an account? <a asp-page="/Account/Register">Create one</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+  <partial name="_ValidationScriptsPartial" />
+  <script>
+    document.getElementById('togglePwd')?.addEventListener('click', function(){
+      var input = document.getElementById('passwordInput');
+      if (!input) return;
+      var isPwd = input.getAttribute('type') === 'password';
+      input.setAttribute('type', isPwd ? 'text' : 'password');
+      this.innerHTML = isPwd ? '<i class="fa-regular fa-eye-slash"></i>' : '<i class="fa-regular fa-eye"></i>';
+    });
+  </script>
+}

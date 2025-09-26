@@ -1,0 +1,65 @@
+@model SupplyChainManagement.Models.Order
+@{
+    ViewData["Title"] = "Create Order";
+}
+<h1>Create Order</h1>
+<hr />
+<div class="row">
+    <div class="col-md-7">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="mb-3">
+                <label class="form-label">Supplier</label>
+                <select asp-for="SupplierId" id="SupplierId" class="form-select" asp-items="ViewBag.SupplierId">
+                    <option value="">-- Optional --</option>
+                </select>
+            </div>
+            <fieldset class="border rounded p-3">
+                <legend class="float-none w-auto fs-6">Add initial item (optional)</legend>
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <label class="form-label">Product</label>
+                        <select name="productId" id="ProductId" class="form-select" asp-items="ViewBag.ProductId"></select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Quantity</label>
+                        <input name="quantity" class="form-control" type="number" value="1" min="1" />
+                    </div>
+                </div>
+            </fieldset>
+            <div class="mt-3">
+                <button type="submit" class="btn btn-primary">Create</button>
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts {
+  <partial name="_ValidationScriptsPartial" />
+  <script>
+    (function(){
+      const supplierSelect = document.getElementById('SupplierId');
+      const productSelect = document.getElementById('ProductId');
+      async function loadProducts(supplierId){
+        if (!productSelect) return;
+        productSelect.innerHTML = '';
+        if (!supplierId){ return; }
+        try {
+          const res = await fetch(`/Orders/ProductsBySupplier?supplierId=${supplierId}`);
+          if (!res.ok) return;
+          const items = await res.json();
+          const frag = document.createDocumentFragment();
+          items.forEach(p => {
+            const opt = document.createElement('option');
+            opt.value = p.id;
+            opt.textContent = p.name;
+            frag.appendChild(opt);
+          });
+          productSelect.appendChild(frag);
+        } catch (e) { /* noop */ }
+      }
+      supplierSelect?.addEventListener('change', e => loadProducts(e.target.value));
+      if (supplierSelect && supplierSelect.value) { loadProducts(supplierSelect.value); }
+    })();
+  </script>
+}

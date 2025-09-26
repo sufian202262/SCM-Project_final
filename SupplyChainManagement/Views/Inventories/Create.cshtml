@@ -1,0 +1,73 @@
+@model SupplyChainManagement.Models.Inventory
+@{
+    ViewData["Title"] = "Add Inventory Record";
+}
+<h1>Add Inventory Record</h1>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            @* Ensure WarehouseId is posted to satisfy [Required] *@
+            @if (User.IsInRole(SupplyChainManagement.Models.Enums.UserRoles.Admin))
+            {
+                <div class="mb-3">
+                    <label class="form-label">Warehouse</label>
+                    <select asp-for="WarehouseId" class="form-select" asp-items="ViewBag.WarehouseId"></select>
+                    <span asp-validation-for="WarehouseId" class="text-danger"></span>
+                </div>
+            }
+            else
+            {
+                <input type="hidden" asp-for="WarehouseId" />
+            }
+            <div class="mb-3">
+                <label class="form-label">Product</label>
+                <select asp-for="ProductId" class="form-select" asp-items="ViewBag.ProductId"></select>
+                <span asp-validation-for="ProductId" class="text-danger"></span>
+            </div>
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <label asp-for="Aisle" class="form-label"></label>
+                    <input asp-for="Aisle" class="form-control" />
+                    <span asp-validation-for="Aisle" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Shelf" class="form-label"></label>
+                    <input asp-for="Shelf" class="form-control" />
+                    <span asp-validation-for="Shelf" class="text-danger"></span>
+                </div>
+                <div class="col-md-4">
+                    <label asp-for="Bin" class="form-label"></label>
+                    <input asp-for="Bin" class="form-control" />
+                    <span asp-validation-for="Bin" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label asp-for="QuantityOnHand" class="form-label"></label>
+                <input asp-for="QuantityOnHand" class="form-control" />
+                <span asp-validation-for="QuantityOnHand" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="DamagedQuantity" class="form-label"></label>
+                <input asp-for="DamagedQuantity" class="form-control" />
+                <span asp-validation-for="DamagedQuantity" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="ReorderLevel" class="form-label"></label>
+                <input asp-for="ReorderLevel" class="form-control" />
+                <span asp-validation-for="ReorderLevel" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="ExpiryDate" class="form-label"></label>
+                <input asp-for="ExpiryDate" class="form-control" type="date" />
+                <span asp-validation-for="ExpiryDate" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+        </form>
+    </div>
+</div>
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

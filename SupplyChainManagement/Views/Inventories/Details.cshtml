@@ -1,0 +1,108 @@
+@model SupplyChainManagement.Models.Inventory
+@{
+    ViewData["Title"] = "Inventory Details";
+    var totalValue = (Model.Product?.Price ?? 0m) * Model.QuantityOnHand;
+    var expired = Model.IsExpired;
+    var below = Model.AvailableQuantity <= Model.ReorderLevel;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0"><i class="fas fa-box"></i> Inventory Details</h1>
+    <div class="btn-group" role="group">
+        <a class="btn btn-outline-primary" asp-action="Edit" asp-route-id="@Model.Id"><i class="fas fa-edit"></i> Edit</a>
+        <a class="btn btn-secondary" asp-action="Index"><i class="fas fa-arrow-left"></i> Back to List</a>
+    </div>
+    </div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-light"><strong><i class="fas fa-circle-info"></i> Product</strong></div>
+            <div class="card-body">
+                <div class="mb-2">
+                    <div class="text-muted small">Name</div>
+                    <div class="fw-semibold">@Model.Product?.Name</div>
+                </div>
+                @if (!string.IsNullOrWhiteSpace(Model.Product?.SKU))
+                {
+                    <div class="mb-2">
+                        <div class="text-muted small">SKU</div>
+                        <span class="badge bg-light text-dark border">@Model.Product?.SKU</span>
+                    </div>
+                }
+                <div class="mb-2">
+                    <div class="text-muted small">Supplier</div>
+                    <div>@Model.Product?.Supplier?.CompanyName</div>
+                </div>
+                <div class="mb-2">
+                    <div class="text-muted small">Unit Price</div>
+                    <div class="fw-semibold text-nowrap">@Model.Product?.Price.ToString("C")</div>
+                </div>
+                <div class="mb-2">
+                    <div class="text-muted small">Expiry</div>
+                    <div>
+                        @(Model.ExpiryDate?.ToString("yyyy-MM-dd") ?? "-")
+                        @if (expired)
+                        {
+                            <span class="badge bg-danger ms-2"><i class="fas fa-circle-exclamation"></i> Expired</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-light"><strong><i class="fas fa-chart-column"></i> Stock</strong></div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="text-muted small">On Hand</div>
+                        <div class="fs-5 fw-semibold">@Model.QuantityOnHand</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-muted small">Damaged</div>
+                        <div class="fs-5 fw-semibold">@Model.DamagedQuantity</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-muted small">Available</div>
+                        <div class="fs-5 fw-semibold">@Model.AvailableQuantity</div>
+                    </div>
+                </div>
+                <hr />
+                <div class="row">
+                    <div class="col-6">
+                        <div class="text-muted small">Reorder Level</div>
+                        <div>@Model.ReorderLevel</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="text-muted small">Status</div>
+                        <div>
+                            @if (expired)
+                            {
+                                <span class="badge bg-danger"><i class="fas fa-circle-exclamation"></i> Expired</span>
+                            }
+                            else if (below)
+                            {
+                                <span class="badge bg-warning text-dark"><i class="fas fa-triangle-exclamation"></i> Reorder</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success"><i class="fas fa-check"></i> OK</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <hr />
+                <div>
+                    <div class="text-muted small">Total Value</div>
+                    <div class="fs-5 fw-semibold text-nowrap">@totalValue.ToString("C")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-3">
+    <a class="btn btn-outline-info" asp-controller="InventoryTransactions" asp-action="Index" asp-route-warehouseId="@Model.WarehouseId" asp-route-productId="@Model.ProductId"><i class="fas fa-clock-rotate-left"></i> View Transactions</a>
+</div>

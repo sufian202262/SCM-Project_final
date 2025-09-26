@@ -1,0 +1,8 @@
+{
+    "dotnet.defaultSolution": "SupplyChainManagement.sln",
+    "dataworkspace.excludedProjects": [
+        "Enter/Enter.sqlproj"
+    ],
+    "appService.preDeployTask": "publish-release",
+    "appService.deploySubpath": "SupplyChainManagement/bin/Release/net9.0/publish"
+}

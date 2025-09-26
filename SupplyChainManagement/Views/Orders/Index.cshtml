@@ -1,0 +1,183 @@
+@model IEnumerable<SupplyChainManagement.Models.Order>
+@using SupplyChainManagement.Models
+@using SupplyChainManagement.Models.Enums
+@{
+    ViewData["Title"] = "Orders";
+}
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <h1 class="mb-0"><i class="fas fa-file-invoice"></i> Orders</h1>
+    @if (User.IsInRole(UserRoles.WarehouseStaff))
+    {
+        <a class="btn btn-primary" asp-action="Create"><i class="fas fa-plus"></i> Create Order</a>
+    }
+    </div>
+<div class="row g-3 mb-3">
+    <div class="col-6 col-md-2">
+        <div class="card text-bg-light border-0">
+            <div class="card-body py-2">
+                <div class="small text-muted">Draft</div>
+                <div class="fs-5 fw-semibold">@ViewBag.CountDraft</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="card text-bg-warning border-0">
+            <div class="card-body py-2">
+                <div class="small">Pending</div>
+                <div class="fs-5 fw-semibold">@ViewBag.CountPending</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="card text-bg-info border-0">
+            <div class="card-body py-2">
+                <div class="small">Approved</div>
+                <div class="fs-5 fw-semibold">@ViewBag.CountApproved</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="card text-bg-secondary border-0">
+            <div class="card-body py-2">
+                <div class="small">Processing</div>
+                <div class="fs-5 fw-semibold">@ViewBag.CountProcessing</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="card text-bg-success border-0">
+            <div class="card-body py-2">
+                <div class="small">Shipped</div>
+                <div class="fs-5 fw-semibold">@ViewBag.CountShipped</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-6 col-md-2">
+        <div class="card text-bg-success border-0">
+            <div class="card-body py-2">
+                <div class="small">Delivered</div>
+                <div class="fs-5 fw-semibold">@ViewBag.CountDelivered</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex gap-2 align-items-center mb-3 flex-wrap">
+    <a class="btn btn-sm btn-outline-secondary @(ViewBag.StatusFilter==null?"active":null)" asp-action="Index">All</a>
+    <a class="btn btn-sm btn-outline-secondary @(ViewBag.StatusFilter=="draft"?"active":null)" asp-action="Index" asp-route-status="draft">Draft</a>
+    <a class="btn btn-sm btn-outline-secondary @(ViewBag.StatusFilter=="pending"?"active":null)" asp-action="Index" asp-route-status="pending">Pending</a>
+    <a class="btn btn-sm btn-outline-secondary @(ViewBag.StatusFilter=="approved"?"active":null)" asp-action="Index" asp-route-status="approved">Approved</a>
+    <a class="btn btn-sm btn-outline-secondary @(ViewBag.StatusFilter=="processing"?"active":null)" asp-action="Index" asp-route-status="processing">Processing</a>
+    <a class="btn btn-sm btn-outline-secondary @(ViewBag.StatusFilter=="shipped"?"active":null)" asp-action="Index" asp-route-status="shipped">Shipped</a>
+    <a class="btn btn-sm btn-outline-secondary @(ViewBag.StatusFilter=="delivered"?"active":null)" asp-action="Index" asp-route-status="delivered">Delivered</a>
+    <a class="btn btn-sm btn-outline-secondary @(ViewBag.StatusFilter=="due"?"active":null)" asp-action="Index" asp-route-status="due">Outbound Due</a>
+    <form method="get" class="ms-auto d-flex" role="search">
+        <input type="hidden" name="status" value="@ViewBag.StatusFilter" />
+        <input class="form-control form-control-sm" type="search" name="q" value="@ViewBag.Query" placeholder="Search id/supplier/warehouse" />
+        <button class="btn btn-sm btn-primary ms-2" type="submit">Search</button>
+    </form>
+</div>
+@if (User.IsInRole(UserRoles.Supplier))
+{
+    var currentView = (string?)ViewBag.SupplierView ?? "received";
+    <ul class="nav nav-tabs mb-3">
+        <li class="nav-item">
+            <a class="nav-link @(string.Equals(currentView, "received", System.StringComparison.OrdinalIgnoreCase) ? "active" : null)" asp-action="Index" asp-route-view="received">Received</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link @(string.Equals(currentView, "confirmed", System.StringComparison.OrdinalIgnoreCase) ? "active" : null)" asp-action="Index" asp-route-view="confirmed">Confirmed</a>
+        </li>
+    </ul>
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+@if (!(Model?.Any() ?? false))
+{
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> No orders found for the selected filters.
+    </div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Warehouse</th>
+                            <th>Supplier</th>
+                            <th>Status</th>
+                            <th class="text-end">Items</th>
+                            <th class="text-end">Total</th>
+                            <th>Created At</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var o in Model)
+                    {
+                        var total = o.Items?.Sum(i => i.UnitPrice * i.Quantity) ?? 0m;
+                        string rowClass = o.Status switch
+                        {
+                            OrderStatus.Draft => "table-light",
+                            OrderStatus.PendingApproval => "table-warning",
+                            OrderStatus.Approved => "table-info",
+                            OrderStatus.SentToSupplier => "table-primary",
+                            OrderStatus.ConfirmedBySupplier => "table-primary",
+                            OrderStatus.Processing => "table-secondary",
+                            OrderStatus.Shipped => "table-success",
+                            OrderStatus.Delivered => "table-success",
+                            OrderStatus.Rejected => "table-danger",
+                            OrderStatus.Cancelled => "table-danger",
+                            _ => ""
+                        };
+                        string badgeClass = o.Status switch
+                        {
+                            OrderStatus.Draft => "bg-light text-dark",
+                            OrderStatus.PendingApproval => "bg-warning",
+                            OrderStatus.Approved => "bg-info",
+                            OrderStatus.SentToSupplier => "bg-primary",
+                            OrderStatus.ConfirmedBySupplier => "bg-primary",
+                            OrderStatus.Processing => "bg-secondary",
+                            OrderStatus.Shipped => "bg-success",
+                            OrderStatus.Delivered => "bg-success",
+                            OrderStatus.Rejected => "bg-danger",
+                            OrderStatus.Cancelled => "bg-danger",
+                            _ => "bg-secondary"
+                        };
+                        <tr class="@rowClass">
+                            <td><span class="badge bg-light text-dark border">#@o.Id</span></td>
+                            <td>@o.Warehouse?.Name</td>
+                            <td>@o.Supplier?.Name</td>
+                            <td><span class="badge @badgeClass">@o.Status</span></td>
+                            <td class="text-end"><span class="badge bg-light text-dark border">@(o.Items?.Count ?? 0)</span></td>
+                            <td class="text-end text-nowrap">@total.ToString("C")</td>
+                            <td>@o.CreatedAt.ToLocalTime().ToString("g")</td>
+                            <td class="text-end">
+                                <div class="btn-group" role="group">
+                                    <a class="btn btn-sm btn-outline-info" asp-action="Details" asp-route-id="@o.Id"><i class="fas fa-eye"></i> Details</a>
+                                    @if (User.IsInRole(UserRoles.Admin))
+                                    {
+                                        <form asp-action="Delete" asp-route-id="@o.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this order?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i> Delete</button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}

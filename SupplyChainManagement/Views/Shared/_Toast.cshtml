@@ -1,0 +1,65 @@
+@using Microsoft.AspNetCore.Mvc.ViewFeatures
+@{
+    var success = TempData["Success"] as string;
+    var error = TempData["Error"] as string;
+    var info = TempData["Info"] as string;
+    var hasModelErrors = !ViewData.ModelState.IsValid && ViewData.ModelState.Values.Any(v => v.Errors.Count > 0);
+    var modelErrors = hasModelErrors ? ViewData.ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList() : new List<string>();
+}
+
+<style>
+  .toast-container {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 1080;
+  }
+</style>
+
+<div class="toast-container">
+  @if (!string.IsNullOrWhiteSpace(success))
+  {
+      <div class="toast align-items-center text-bg-success border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body">@success</div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+  }
+  @if (!string.IsNullOrWhiteSpace(info))
+  {
+      <div class="toast align-items-center text-bg-info border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body">@info</div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+  }
+  @if (!string.IsNullOrWhiteSpace(error) || modelErrors.Any())
+  {
+      <div class="toast align-items-center text-bg-danger border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+          <div class="toast-body">
+            @if (!string.IsNullOrWhiteSpace(error)) { @error }
+            @if (modelErrors.Any())
+            {
+                <ul class="mb-0 mt-1 ps-3">
+                  @foreach (var err in modelErrors) { <li>@err</li> }
+                </ul>
+            }
+          </div>
+          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+      </div>
+  }
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const toastElList = [].slice.call(document.querySelectorAll('.toast'))
+    toastElList.forEach(function (toastEl) {
+      const toast = new bootstrap.Toast(toastEl, { delay: 4000 });
+      toast.show();
+    })
+  });
+</script>

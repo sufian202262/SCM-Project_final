@@ -1,0 +1,114 @@
+@model SupplyChainManagement.Models.Product
+
+@{
+    ViewData["Title"] = "Create Product";
+}
+
+<h1>Create New Product</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="CreateProduct" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            
+            <!-- Hidden field for SupplierId - will be set by controller -->
+            <input asp-for="SupplierId" type="hidden" value="0" />
+            
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" placeholder="Enter product name" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="4" placeholder="Enter product description"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label asp-for="Price" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text">$</span>
+                            <input asp-for="Price" class="form-control" step="0.01" placeholder="0.00" />
+                        </div>
+                        <span asp-validation-for="Price" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <label asp-for="StockQuantity" class="form-label">Stock Quantity</label>
+                        <input asp-for="StockQuantity" class="form-control" type="number" min="0" placeholder="0" />
+                        <span asp-validation-for="StockQuantity" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="mb-3">
+                        <div class="form-check mt-4">
+                            <input asp-for="IsActive" class="form-check-input" checked />
+                            <label asp-for="IsActive" class="form-check-label">
+                                Product is active
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="SKU" class="form-label">SKU (Optional)</label>
+                        <input asp-for="SKU" class="form-control" placeholder="Product SKU" />
+                        <span asp-validation-for="SKU" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label asp-for="UnitOfMeasure" class="form-label">Unit of Measure</label>
+                        <select asp-for="UnitOfMeasure" class="form-select">
+                            <option value="pcs">Pieces</option>
+                            <option value="kg">Kilograms</option>
+                            <option value="lbs">Pounds</option>
+                            <option value="box">Box</option>
+                            <option value="pack">Pack</option>
+                            <option value="bottle">Bottle</option>
+                            <option value="meter">Meter</option>
+                            <option value="liter">Liter</option>
+                        </select>
+                        <span asp-validation-for="UnitOfMeasure" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Create Product
+                </button>
+                <a asp-action="ProductCatalog" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Product Guidelines</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled small">
+                    <li><i class="fas fa-check text-success"></i> Use clear, descriptive names</li>
+                    <li><i class="fas fa-check text-success"></i> Include detailed descriptions</li>
+                    <li><i class="fas fa-check text-success"></i> Set competitive pricing</li>
+                    <li><i class="fas fa-check text-success"></i> Mark as active when ready to sell</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

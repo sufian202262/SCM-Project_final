@@ -1,0 +1,123 @@
+@model IEnumerable<SupplyChainManagement.Models.Inventory>
+@using SupplyChainManagement.Models.Enums
+@{
+    ViewData["Title"] = "Inventories";
+}
+
+<div class="d-flex flex-wrap gap-2 justify-content-between align-items-center mb-3">
+    <div class="d-flex align-items-center gap-2">
+        <h1 class="mb-0"><i class="fas fa-warehouse"></i> Inventory</h1>
+        <span class="badge bg-primary-subtle text-primary border border-primary">@Model?.Count() total</span>
+    </div>
+    <div class="d-flex gap-2">
+        <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <input id="inventorySearch" type="text" class="form-control" placeholder="Search by product, warehouse/supplier..." />
+        </div>
+        @if (User.IsInRole(UserRoles.WarehouseStaff))
+        {
+            <a class="btn btn-primary" asp-action="Create"><i class="fas fa-plus"></i> Add Inventory Record</a>
+        }
+    </div>
+</div>
+
+@if (!(Model?.Any() ?? false))
+{
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> No inventory records found.
+    </div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table id="inventoriesTable" class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>@(User.IsInRole(UserRoles.Admin) ? "Warehouse" : "Supplier")</th>
+                            <th class="text-end">On Hand</th>
+                            <th class="text-end">Damaged</th>
+                            <th class="text-end">Available</th>
+                            <th class="text-end">Reorder Level</th>
+                            <th>Expiry</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var item in Model)
+                    {
+                        var below = item.AvailableQuantity <= item.ReorderLevel;
+                        var expired = item.IsExpired;
+                        <tr class="@(expired ? "table-danger" : (below ? "table-warning" : ""))">
+                            <td>
+                                <div class="fw-semibold">@item.Product?.Name</div>
+                                @if (!string.IsNullOrWhiteSpace(item.Product?.SKU))
+                                {
+                                    <div><span class="badge bg-light text-dark border">@item.Product.SKU</span></div>
+                                }
+                            </td>
+                            <td>
+                                @if (User.IsInRole(UserRoles.Admin))
+                                {
+                                    @item.Warehouse?.Name
+                                }
+                                else
+                                {
+                                    @item.Product?.Supplier?.CompanyName
+                                }
+                            </td>
+                            <td class="text-end">@item.QuantityOnHand</td>
+                            <td class="text-end">@item.DamagedQuantity</td>
+                            <td class="text-end">@item.AvailableQuantity</td>
+                            <td class="text-end">@item.ReorderLevel</td>
+                            <td>@(item.ExpiryDate?.ToString("yyyy-MM-dd") ?? "-")</td>
+                            <td>
+                                @if (expired)
+                                {
+                                    <span class="badge bg-danger"><i class="fas fa-circle-exclamation"></i> Expired</span>
+                                }
+                                else if (below)
+                                {
+                                    <span class="badge bg-warning text-dark"><i class="fas fa-triangle-exclamation"></i> Reorder</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success"><i class="fas fa-check"></i> OK</span>
+                                }
+                            </td>
+                            <td class="text-end">
+                                <div class="btn-group" role="group">
+                                    <a class="btn btn-sm btn-outline-secondary" asp-action="Edit" asp-route-id="@item.Id"><i class="fas fa-edit"></i> Edit</a>
+                                    <a class="btn btn-sm btn-outline-info" asp-action="Details" asp-route-id="@item.Id"><i class="fas fa-eye"></i> Details</a>
+                                    <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@item.Id"><i class="fas fa-trash"></i> Delete</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            const search = document.getElementById('inventorySearch');
+            const table = document.getElementById('inventoriesTable');
+            if (!search || !table) return;
+            const rows = Array.from(table.querySelectorAll('tbody tr'));
+            search.addEventListener('input', function () {
+                const q = this.value.toLowerCase();
+                rows.forEach(r => {
+                    const text = r.innerText.toLowerCase();
+                    r.style.display = text.includes(q) ? '' : 'none';
+                });
+            });
+        })();
+    </script>
+}

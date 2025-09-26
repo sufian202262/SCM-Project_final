@@ -1,0 +1,242 @@
+@page
+@model SupplyChainManagement.Areas.Identity.Pages.Account.RegisterModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<style>
+  .auth-bg { min-height: 100vh; background: #f5f7fb; display:flex; align-items:center; justify-content:center; padding:2rem 1rem; }
+  .auth-card { border:0; border-radius:1rem; overflow:hidden; box-shadow:0 10px 30px rgba(0,0,0,.15); }
+  .auth-card .header { background: #0d6efd; }
+  .form-icon { position:absolute; left:.9rem; top:73%; transform:translateY(-50%); color:#64748b; pointer-events:none; z-index:3; }
+  .with-icon { padding-left:2.25rem; }
+  .input-group.position-relative .with-icon { padding-left:2.25rem; }
+</style>
+
+<div class="auth-bg">
+  <div class="col-12 col-md-8 col-lg-6">
+    <div class="card auth-card">
+      <div class="header p-4 text-white">
+        <h2 class="mb-0">Create your account</h2>
+        <div class="opacity-75">Join us to continue</div>
+      </div>
+      <div class="card-body p-4">
+        <form method="post">
+          <input type="hidden" asp-for="ReturnUrl" />
+          <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+          <div class="row g-2">
+            <div class="col-md-6 position-relative">
+              <label asp-for="Input.FirstName" class="form-label">First name</label>
+              <i class="fa-solid fa-user form-icon"></i>
+              <input asp-for="Input.FirstName" class="form-control with-icon" placeholder="John" />
+              <span asp-validation-for="Input.FirstName" class="text-danger"></span>
+            </div>
+            <div class="col-md-6 position-relative">
+              <label asp-for="Input.LastName" class="form-label">Last name</label>
+              <i class="fa-regular fa-user form-icon"></i>
+              <input asp-for="Input.LastName" class="form-control with-icon" placeholder="Doe" />
+              <span asp-validation-for="Input.LastName" class="text-danger"></span>
+            </div>
+          </div>
+
+          <div class="mb-3 mt-2 position-relative">
+            <label asp-for="Input.Email" class="form-label">Email</label>
+            <i class="fa-solid fa-envelope form-icon"></i>
+            <input asp-for="Input.Email" class="form-control with-icon" autocomplete="username" placeholder="you@company.com" />
+            <span asp-validation-for="Input.Email" class="text-danger"></span>
+          </div>
+
+          <div class="row g-2">
+            <div class="col-md-6 position-relative">
+              <label asp-for="Input.Password" class="form-label">Password</label>
+              <i class="fa-solid fa-lock form-icon"></i>
+              <div class="input-group position-relative">
+                <input asp-for="Input.Password" class="form-control with-icon" autocomplete="new-password" placeholder="Create a password" id="pwd1" />
+                <button type="button" class="btn btn-outline-secondary" data-toggle="pwd1"><i class="fa-regular fa-eye"></i></button>
+              </div>
+              <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+            <div class="col-md-6 position-relative">
+              <label asp-for="Input.ConfirmPassword" class="form-label">Confirm password</label>
+              <i class="fa-solid fa-shield form-icon"></i>
+              <div class="input-group position-relative">
+                <input asp-for="Input.ConfirmPassword" class="form-control with-icon" autocomplete="new-password" placeholder="Repeat password" id="pwd2" />
+                <button type="button" class="btn btn-outline-secondary" data-toggle="pwd2"><i class="fa-regular fa-eye"></i></button>
+              </div>
+              <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+            </div>
+          </div>
+
+          <div class="mb-3 mt-2 position-relative">
+            <label asp-for="Input.PhoneNumber" class="form-label">Phone number</label>
+            <i class="fa-solid fa-phone form-icon"></i>
+            <input asp-for="Input.PhoneNumber" class="form-control with-icon" placeholder="+1 555 123 4567" />
+            <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+          </div>
+
+          <div class="row g-2">
+            <div class="col-md-6">
+              <label asp-for="Input.Role" class="form-label">Role</label>
+              @if (Model.RoleOptions != null && Model.RoleOptions.Any())
+              {
+                <select asp-for="Input.Role" class="form-select" asp-items="Model.RoleOptions"></select>
+              }
+              else
+              {
+                <select asp-for="Input.Role" class="form-select">
+                  <option>Supplier</option>
+                  <option>WarehouseStaff</option>
+                </select>
+              }
+              <span asp-validation-for="Input.Role" class="text-danger"></span>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">&nbsp;</label>
+              <div class="small text-muted">Select Supplier or Warehouse based on chosen role.</div>
+            </div>
+          </div>
+
+          <div class="row g-2 mt-1">
+            <div class="col-12" id="supplierGroup">
+              <div class="row g-2">
+                <div class="col-md-6 position-relative">
+                  <label asp-for="Input.SupplierCompanyName" class="form-label">Company name</label>
+                  <i class="fa-solid fa-building form-icon"></i>
+                  <input asp-for="Input.SupplierCompanyName" class="form-control with-icon" placeholder="Acme Inc." id="Input_SupplierCompanyName" />
+                  <span asp-validation-for="Input.SupplierCompanyName" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 position-relative">
+                  <label asp-for="Input.SupplierContactName" class="form-label">Contact name</label>
+                  <i class="fa-regular fa-id-badge form-icon"></i>
+                  <input asp-for="Input.SupplierContactName" class="form-control with-icon" placeholder="Jane Smith" />
+                  <span asp-validation-for="Input.SupplierContactName" class="text-danger"></span>
+                </div>
+              </div>
+              <div class="row g-2 mt-1">
+                <div class="col-md-6 position-relative">
+                  <label asp-for="Input.SupplierEmail" class="form-label">Supplier email</label>
+                  <i class="fa-solid fa-envelope form-icon"></i>
+                  <input asp-for="Input.SupplierEmail" class="form-control with-icon" placeholder="supplier@company.com" />
+                  <span asp-validation-for="Input.SupplierEmail" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 position-relative">
+                  <label asp-for="Input.SupplierPhone" class="form-label">Supplier phone</label>
+                  <i class="fa-solid fa-phone form-icon"></i>
+                  <input asp-for="Input.SupplierPhone" class="form-control with-icon" placeholder="+1 555 234 5678" />
+                  <span asp-validation-for="Input.SupplierPhone" class="text-danger"></span>
+                </div>
+              </div>
+              <div class="row g-2 mt-1">
+                <div class="col-md-8 position-relative">
+                  <label asp-for="Input.SupplierAddress" class="form-label">Supplier address</label>
+                  <i class="fa-solid fa-location-dot form-icon"></i>
+                  <input asp-for="Input.SupplierAddress" class="form-control with-icon" placeholder="123 Market St, City" />
+                  <span asp-validation-for="Input.SupplierAddress" class="text-danger"></span>
+                </div>
+                <div class="col-md-4 position-relative">
+                  <label asp-for="Input.SupplierWebsite" class="form-label">Supplier website</label>
+                  <i class="fa-solid fa-globe form-icon"></i>
+                  <input asp-for="Input.SupplierWebsite" class="form-control with-icon" placeholder="https://example.com" />
+                  <span asp-validation-for="Input.SupplierWebsite" class="text-danger"></span>
+                </div>
+              </div>
+              <div class="small text-muted mt-1">These details will create a new supplier company.</div>
+            </div>
+            <div class="col-12" id="warehouseGroup">
+              <div class="row g-2">
+                <div class="col-md-6 position-relative">
+                  <label asp-for="Input.WarehouseName" class="form-label">Warehouse name</label>
+                  <i class="fa-solid fa-warehouse form-icon"></i>
+                  <input asp-for="Input.WarehouseName" class="form-control with-icon" placeholder="Central Warehouse" id="Input_WarehouseName" />
+                  <span asp-validation-for="Input.WarehouseName" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 position-relative">
+                  <label asp-for="Input.WarehouseLocation" class="form-label">Warehouse location</label>
+                  <i class="fa-solid fa-map-pin form-icon"></i>
+                  <input asp-for="Input.WarehouseLocation" class="form-control with-icon" placeholder="456 Depot Rd, City" id="Input_WarehouseLocation" />
+                  <span asp-validation-for="Input.WarehouseLocation" class="text-danger"></span>
+                </div>
+              </div>
+              <div class="row g-2 mt-1">
+                <div class="col-md-6 position-relative">
+                  <label asp-for="Input.WarehousePhoneNumber" class="form-label">Warehouse phone</label>
+                  <i class="fa-solid fa-phone form-icon"></i>
+                  <input asp-for="Input.WarehousePhoneNumber" class="form-control with-icon" placeholder="+1 555 987 6543" />
+                  <span asp-validation-for="Input.WarehousePhoneNumber" class="text-danger"></span>
+                </div>
+                <div class="col-md-6 position-relative">
+                  <label asp-for="Input.WarehouseEmail" class="form-label">Warehouse email</label>
+                  <i class="fa-solid fa-envelope form-icon"></i>
+                  <input asp-for="Input.WarehouseEmail" class="form-control with-icon" placeholder="warehouse@company.com" />
+                  <span asp-validation-for="Input.WarehouseEmail" class="text-danger"></span>
+                </div>
+              </div>
+              <div class="small text-muted mt-1">These details will create a new warehouse.</div>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100">Create account</button>
+
+          <div class="text-center mt-3 small">
+            Already have an account? <a asp-page="/Account/Login">Sign in</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+  
+</div>
+
+@section Scripts { 
+  <partial name="_ValidationScriptsPartial" /> 
+  <script>
+    // Password toggles
+    document.querySelectorAll('[data-toggle]')?.forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var id = this.getAttribute('data-toggle');
+        var input = document.getElementById(id);
+        if (!input) return;
+        var isPwd = input.getAttribute('type') === 'password';
+        input.setAttribute('type', isPwd ? 'text' : 'password');
+        this.innerHTML = isPwd ? '<i class="fa-regular fa-eye-slash"></i>' : '<i class="fa-regular fa-eye"></i>';
+      });
+    });
+
+    // Role-based conditional fields
+    (function(){
+      var roleSelect = document.getElementById('Input_Role');
+      var supplierGroup = document.getElementById('supplierGroup');
+      var warehouseGroup = document.getElementById('warehouseGroup');
+      var supplierCompany = document.getElementById('Input_SupplierCompanyName');
+      var warehouseName = document.getElementById('Input_WarehouseName');
+      var warehouseLocation = document.getElementById('Input_WarehouseLocation');
+
+      function updateVisibility(){
+        var role = roleSelect ? roleSelect.value : '';
+        if (role === 'Supplier'){
+          supplierGroup?.classList.remove('d-none');
+          warehouseGroup?.classList.add('d-none');
+          if (supplierCompany) supplierCompany.required = true; // company name required for supplier
+          if (warehouseName) warehouseName.required = false;
+          if (warehouseLocation) warehouseLocation.required = false;
+        } else if (role === 'WarehouseStaff'){
+          warehouseGroup?.classList.remove('d-none');
+          supplierGroup?.classList.add('d-none');
+          if (warehouseName) warehouseName.required = true;
+          if (warehouseLocation) warehouseLocation.required = true;
+          if (supplierCompany) supplierCompany.required = false;
+        } else {
+          // Admin or others: hide both
+          supplierGroup?.classList.add('d-none');
+          warehouseGroup?.classList.add('d-none');
+          if (warehouseName) warehouseName.required = false;
+          if (warehouseLocation) warehouseLocation.required = false;
+          if (supplierCompany) supplierCompany.required = false;
+        }
+      }
+      roleSelect?.addEventListener('change', updateVisibility);
+      updateVisibility();
+    })();
+  </script>
+}

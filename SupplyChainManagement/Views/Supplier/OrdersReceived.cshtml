@@ -1,0 +1,99 @@
+@model IEnumerable<SupplyChainManagement.Models.Order>
+@using SupplyChainManagement.Models.Enums
+
+@{
+    ViewData["Title"] = "Orders Received";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Orders Received</h1>
+    <span class="badge bg-info fs-6">@Model.Count() Total Orders</span>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="row">
+    @if (!Model.Any())
+    {
+        <div class="col-12">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No orders received yet.
+            </div>
+        </div>
+    }
+    else
+    {
+        @foreach (var order in Model)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <strong>Order #@order.Id</strong>
+                        <span class="badge @(order.Status == OrderStatus.Pending ? "bg-warning" : 
+                                           order.Status == OrderStatus.Approved ? "bg-success" : 
+                                           order.Status == OrderStatus.Rejected ? "bg-danger" : 
+                                           order.Status == OrderStatus.Shipped ? "bg-info" : "bg-secondary")">
+                            @order.Status
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">
+                            <strong>From:</strong> @order.Warehouse?.Name<br>
+                            <strong>Created:</strong> @order.CreatedAt.ToString("MMM dd, yyyy")<br>
+                            <strong>Items:</strong> @order.Items.Count()<br>
+                            <strong>Total:</strong> @order.TotalAmount.ToString("C")
+                        </p>
+                        
+                        @if (order.Items.Any())
+                        {
+                            <div class="mt-2">
+                                <small class="text-muted">Items:</small>
+                                <ul class="list-unstyled small">
+                                    @foreach (var item in order.Items.Take(3))
+                                    {
+                                        <li>• @item.Product?.Name (@item.Quantity units)</li>
+                                    }
+                                    @if (order.Items.Count() > 3)
+                                    {
+                                        <li class="text-muted">... and @(order.Items.Count() - 3) more</li>
+                                    }
+                                </ul>
+                            </div>
+                        }
+                    </div>
+                    <div class="card-footer">
+                        <a href="@Url.Action("Details", "Orders", new { id = order.Id })" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-eye"></i> View Details
+                        </a>
+                        @if (order.Status == OrderStatus.Pending || order.Status == OrderStatus.PendingApproval)
+                        {
+                            <a href="@Url.Action("ConfirmOrders")" class="btn btn-warning btn-sm">
+                                <i class="fas fa-check-circle"></i> Review
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<div class="mt-4">
+    <a asp-action="ProductCatalog" class="btn btn-outline-secondary">
+        <i class="fas fa-boxes"></i> Manage Products
+    </a>
+</div>

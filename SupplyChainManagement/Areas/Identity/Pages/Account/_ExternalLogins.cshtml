@@ -1,0 +1,39 @@
+@* External login section intentionally suppressed. Also remove any message/column related to external providers. *@
+<script>
+  (function(){
+    function run(){
+      try {
+        var doc = document;
+        var textMatchers = [
+          'Use another service to log in',
+          'There are no external authentication services configured',
+          'No external authentication services configured',
+          'external login'
+        ];
+        var candidates = Array.from(doc.querySelectorAll('div,section,aside,p,li'));
+        candidates.forEach(function(el){
+          var txt = (el.innerText || '').toLowerCase();
+          if (textMatchers.some(function(t){ return txt.indexOf(t.toLowerCase()) !== -1; })){
+            var col = el.closest('.col, [class*="col-"]') || el;
+            var row = col.closest('.row');
+            col.remove();
+            if (row){
+              var leftCol = row.querySelector('.col, [class*="col-"]');
+              if (leftCol){
+                leftCol.className = leftCol.className
+                  .replace(/col-\w+-\d+/g, '')
+                  .trim();
+                leftCol.classList.add('col-12');
+              }
+            }
+          }
+        });
+      } catch(e) { /* no-op */ }
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function(){ setTimeout(run, 0); });
+    } else {
+      setTimeout(run, 0);
+    }
+  })();
+  </script>

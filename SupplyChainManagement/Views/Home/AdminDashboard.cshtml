@@ -1,0 +1,314 @@
+@model SupplyChainManagement.Models.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<style>
+  .metric-card .display-6 { font-weight: 700; }
+  .metric-card .label { opacity: .75; }
+  .metric-card .icon { width: 1.4rem; text-align: center; margin-right: .4rem; }
+  .kpi-grid .card { border: 0; }
+  .table thead th { white-space: nowrap; }
+  .table-hover tbody tr:hover { background: rgba(13,110,253,.05); }
+  .card-header .title-icon { width: 1.1rem; text-align: center; margin-right: .35rem; }
+  /* Order status badge mapping */
+  .badge-status { --bs-badge-font-size: .75rem; }
+  .badge-draft { background-color: #e9ecef; color: #000; }
+  .badge-pending { background-color: #ffc107; }
+  .badge-approved { background-color: #0dcaf0; }
+  .badge-processing { background-color: #6c757d; }
+  .badge-sent { background-color: #0d6efd; }
+  .badge-shipped { background-color: #198754; }
+  .badge-delivered { background-color: #198754; }
+  .badge-rejected, .badge-cancelled { background-color: #dc3545; }
+</style>
+
+<div class="container-xxl">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <h1 class="mb-0"><i class="fa-solid fa-gauge-high me-2"></i>Admin Dashboard</h1>
+      <div class="text-muted">Overall health and recent activity across the system</div>
+    </div>
+    <div>
+      <div class="btn-group" role="group">
+        <a class="btn btn-primary" asp-controller="Users" asp-action="Index"><i class="fa-regular fa-user"></i> Manage Users</a>
+        <a class="btn btn-outline-primary" asp-controller="Products" asp-action="Index"><i class="fa-solid fa-box"></i> Manage Products</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Headline metrics -->
+  <div class="row g-3 kpi-grid">
+    <div class="col-6 col-md-3">
+      <div class="card metric-card shadow-sm h-100 text-bg-primary">
+        <div class="card-body">
+          <div class="label small"><i class="fa-regular fa-user icon"></i> Users</div>
+          <div class="display-6">@Model.TotalUsers</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card metric-card shadow-sm h-100 text-bg-success">
+        <div class="card-body">
+          <div class="label small"><i class="fa-solid fa-people-carry-box icon"></i> Suppliers</div>
+          <div class="display-6">@Model.TotalSuppliers</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card metric-card shadow-sm h-100 text-bg-info">
+        <div class="card-body">
+          <div class="label small"><i class="fa-solid fa-building-warehouse icon"></i> Warehouses</div>
+          <div class="display-6">@Model.TotalWarehouses</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-md-3">
+      <div class="card metric-card shadow-sm h-100 text-bg-warning">
+        <div class="card-body">
+          <div class="label small"><i class="fa-solid fa-boxes-stacked icon"></i> Products</div>
+          <div class="display-6">@Model.TotalProducts</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Orders & Shipments KPIs -->
+  <div class="row g-3 mt-1">
+    <div class="col-12 col-lg-8">
+      <div class="card shadow-sm h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span><i class="fa-solid fa-file-invoice title-icon"></i> Orders Overview</span>
+          <a class="btn btn-sm btn-outline-secondary" asp-controller="Orders" asp-action="Index">View All</a>
+        </div>
+        <div class="card-body">
+          <div class="row text-center g-3">
+            <div class="col-6 col-md-4">
+              <div class="card h-100 border-0 text-bg-dark">
+                <div class="card-body">
+                  <div class="small text-white"><i class="fa-regular fa-calendar"></i> Today</div>
+                  <div class="h3 m-0 fw-bold">@Model.OrdersToday</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-4">
+              <div class="card h-100 border-0 text-bg-warning">
+                <div class="card-body">
+                  <div class="small text-muted"><i class="fa-regular fa-clock"></i> Pending</div>
+                  <div class="h3 m-0 fw-bold">@Model.OrdersPending</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-4">
+              <div class="card h-100 border-0 text-bg-success">
+                <div class="card-body">
+                  <div class="small text-white"><i class="fa-regular fa-circle-check"></i> Approved</div>
+                  <div class="h3 m-0 fw-bold">@Model.OrdersApproved</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-4">
+              <div class="card h-100 border-0 text-bg-danger">
+                <div class="card-body">
+                  <div class="small text-white"><i class="fa-solid fa-paper-plane"></i> Sent to Supplier</div>
+                  <div class="h3 m-0 fw-bold">@Model.OrdersSentToSupplier</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-4">
+              <div class="card h-100 border-0 text-bg-info">
+                <div class="card-body">
+                  <div class="small text-muted"><i class="fa-solid fa-gears"></i> Processing</div>
+                  <div class="h3 m-0 fw-bold">@Model.OrdersProcessing</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-4">
+              <div class="card h-100 border-0 text-bg-primary">
+                <div class="card-body">
+                  <div class="small text-white"><i class="fa-solid fa-truck-fast"></i> Shipped</div>
+                  <div class="h3 m-0 fw-bold">@Model.OrdersShipped</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-4">
+              <div class="card h-100 border-0 text-bg-secondary">
+                <div class="card-body">
+                  <div class="small text-white"><i class="fa-solid fa-box-circle-check"></i> Delivered</div>
+                  <div class="h3 m-0 fw-bold">@Model.OrdersDelivered</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-lg-4">
+      <div class="card shadow-sm h-100">
+        <div class="card-header"><i class="fa-solid fa-truck title-icon"></i> Shipments</div>
+        <div class="card-body">
+          <div class="row g-2">
+            <div class="col-6">
+              <div class="card text-bg-info border-0 h-100">
+                <div class="card-body">
+                  <div class="small">In Transit</div>
+                  <div class="h4 m-0 fw-bold">@Model.ShipmentsInTransit</div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="card text-bg-success border-0 h-100">
+                <div class="card-body">
+                  <div class="small">Delivered</div>
+                  <div class="h4 m-0 fw-bold">@Model.ShipmentsDelivered</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Revenue & Risks -->
+  <div class="row g-3 mt-1">
+    <div class="col-12 col-lg-5">
+      <div class="card shadow-sm h-100 text-bg-dark">
+        <div class="card-header border-0 bg-transparent text-white"><i class="fa-solid fa-sack-dollar title-icon"></i> Revenue</div>
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="opacity-75">This Month</div>
+            <div class="h4 m-0 fw-bold">@Model.RevenueThisMonth.ToString("C")</div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center">
+            <div class="opacity-75">All Time</div>
+            <div class="h4 m-0 fw-bold">@Model.RevenueAllTime.ToString("C")</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-lg-7">
+      <div class="card shadow-sm h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span><i class="fa-solid fa-triangle-exclamation title-icon"></i> Inventory Risks</span>
+          <a class="btn btn-sm btn-outline-secondary" asp-controller="Inventories" asp-action="Index">View Inventory</a>
+        </div>
+        <div class="card-body p-0">
+          @if (Model.LowStockTop == null || !Model.LowStockTop.Any())
+          {
+            <div class="p-3 text-muted">No low stock items.</div>
+          }
+          else
+          {
+            <table class="table table-sm table-hover mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th class="text-end">On Hand</th>
+                  <th class="text-end">Reorder</th>
+                </tr>
+              </thead>
+              <tbody>
+              @foreach (var i in Model.LowStockTop)
+              {
+                <tr>
+                  <td>@i.Product?.Name</td>
+                  <td class="text-end">@i.QuantityOnHand</td>
+                  <td class="text-end">@i.ReorderLevel</td>
+                </tr>
+              }
+              </tbody>
+            </table>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent activity -->
+  <div class="row g-3 mt-1">
+    <div class="col-12 col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span><i class="fa-regular fa-clipboard title-icon"></i> Recent Orders</span>
+          <a class="btn btn-sm btn-outline-secondary" asp-controller="Orders" asp-action="Index">All Orders</a>
+        </div>
+        <div class="card-body p-0">
+          @if (Model.RecentOrders == null || !Model.RecentOrders.Any())
+          {
+            <div class="p-3 text-muted">No recent orders.</div>
+          }
+          else
+          {
+            <table class="table table-hover mb-0 align-middle">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Supplier</th>
+                  <th>Warehouse</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+              @foreach (var o in Model.RecentOrders)
+              {
+                var badgeClass = o.Status switch
+                {
+                    SupplyChainManagement.Models.Enums.OrderStatus.Draft => "badge-status badge-draft",
+                    SupplyChainManagement.Models.Enums.OrderStatus.PendingApproval => "badge-status badge-pending",
+                    SupplyChainManagement.Models.Enums.OrderStatus.Approved => "badge-status badge-approved",
+                    SupplyChainManagement.Models.Enums.OrderStatus.SentToSupplier => "badge-status badge-sent",
+                    SupplyChainManagement.Models.Enums.OrderStatus.ConfirmedBySupplier => "badge-status badge-sent",
+                    SupplyChainManagement.Models.Enums.OrderStatus.Processing => "badge-status badge-processing",
+                    SupplyChainManagement.Models.Enums.OrderStatus.Shipped => "badge-status badge-shipped",
+                    SupplyChainManagement.Models.Enums.OrderStatus.Delivered => "badge-status badge-delivered",
+                    SupplyChainManagement.Models.Enums.OrderStatus.Rejected => "badge-status badge-rejected",
+                    SupplyChainManagement.Models.Enums.OrderStatus.Cancelled => "badge-status badge-cancelled",
+                    _ => "badge-status badge-processing"
+                };
+                <tr>
+                  <td><span class="badge bg-light text-dark border">#@o.Id</span></td>
+                  <td>@o.Supplier?.CompanyName</td>
+                  <td>@o.Warehouse?.Name</td>
+                  <td><span class="badge @badgeClass">@o.Status</span></td>
+                </tr>
+              }
+              </tbody>
+            </table>
+          }
+        </div>
+      </div>
+    </div>
+    <div class="col-12 col-lg-6">
+      <div class="card shadow-sm h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span><i class="fa-solid fa-truck-ramp-box title-icon"></i> Recent Shipments</span>
+          <a class="btn btn-sm btn-outline-secondary" asp-controller="Shipments" asp-action="Index">All Shipments</a>
+        </div>
+        <div class="card-body p-0">
+          @if (Model.RecentShipments == null || !Model.RecentShipments.Any())
+          {
+            <div class="p-3 text-muted">No recent shipments.</div>
+          }
+          else
+          {
+            <ul class="list-group list-group-flush">
+            @foreach (var s in Model.RecentShipments)
+            {
+              <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                  <div class="fw-semibold">Shipment #@s.Id 
+                    <span class="badge @(s.Status == SupplyChainManagement.Models.Enums.ShipmentStatus.Delivered ? "bg-success" : (s.Status == SupplyChainManagement.Models.Enums.ShipmentStatus.InTransit ? "bg-info" : "bg-secondary")) ms-2">@s.Status</span>
+                  </div>
+                  <div class="small text-muted">Order #@s.OrderId • @s.CreatedAt.ToLocalTime().ToString("g")</div>
+                </div>
+                <a class="btn btn-sm btn-outline-primary" asp-controller="Shipments" asp-action="Details" asp-route-id="@s.Id">Details</a>
+              </li>
+            }
+            </ul>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,128 @@
+@model SupplyChainManagement.Models.Shipment
+@using SupplyChainManagement.Models.Enums
+
+@{
+    ViewData["Title"] = "Shipment Details";
+
+    string BadgeFor(ShipmentStatus status) => status switch
+    {
+        ShipmentStatus.Pending => "bg-secondary",
+        ShipmentStatus.InTransit => "bg-info",
+        ShipmentStatus.Delivered => "bg-success",
+        ShipmentStatus.Delayed => "bg-warning text-dark",
+        ShipmentStatus.Cancelled => "bg-danger",
+        _ => "bg-secondary"
+    };
+
+    // Compute total amount for the shipment based on its order items
+    var totalAmount = Model?.Order?.Items?.Any() == true
+        ? Model.Order.Items.Sum(it => it.UnitPrice * it.Quantity)
+        : 0m;
+}
+<div class="d-flex justify-content-between align-items-center mb-1">
+    <h1 class="mb-0">Shipment <span class="badge bg-light text-dark border">#@Model.Id</span></h1>
+    <span class="badge @BadgeFor(Model.Status)">@Model.Status</span>
+    </div>
+<p class="text-muted">Order <span class="badge bg-light text-dark border">#@Model.OrderId</span></p>
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-truck"></i> Shipment Info</span>
+                <span class="badge @BadgeFor(Model.Status)">@Model.Status</span>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-3">Courier</dt>
+                    <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.Courier) ? "-" : Model.Courier)</dd>
+                    <dt class="col-sm-3">Tracking</dt>
+                    <dd class="col-sm-9">@(string.IsNullOrWhiteSpace(Model.TrackingNumber) ? "-" : Model.TrackingNumber)</dd>
+                    <dt class="col-sm-3">Created</dt>
+                    <dd class="col-sm-9">@Model.CreatedAt.ToLocalTime().ToString("g")</dd>
+                    <dt class="col-sm-3">Shipped</dt>
+                    <dd class="col-sm-9">@(Model.ShippedAt?.ToLocalTime().ToString("g") ?? "-")</dd>
+                    <dt class="col-sm-3">Delivered</dt>
+                    <dd class="col-sm-9">@(Model.DeliveredAt?.ToLocalTime().ToString("g") ?? "-")</dd>
+                    <dt class="col-sm-3">Total Amount</dt>
+                    <dd class="col-sm-9 fw-semibold text-nowrap">@totalAmount.ToString("C")</dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-boxes-stacked"></i> Products in this shipment</span>
+                <span class="badge bg-secondary">@((Model?.Order?.Items?.Count) ?? 0) items</span>
+            </div>
+            <div class="card-body p-0">
+                @if (Model?.Order?.Items == null || !Model.Order.Items.Any())
+                {
+                    <div class="p-3 text-muted">No products found for this order.</div>
+                }
+                else
+                {
+                    <table class="table mb-0 align-middle">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>SKU</th>
+                                <th class="text-end">Qty</th>
+                                <th class="text-end">Unit Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var it in Model.Order.Items)
+                        {
+                            <tr>
+                                <td>@it.Product?.Name</td>
+                                <td>@it.Product?.SKU</td>
+                                <td class="text-end">@it.Quantity</td>
+                                <td class="text-end text-nowrap">@it.UnitPrice.ToString("C")</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">Actions</div>
+            <div class="card-body">
+                <a class="btn btn-secondary" asp-action="Index"><i class="fas fa-arrow-left"></i> Back</a>
+                @if (User.IsInRole(SupplyChainManagement.Models.Enums.UserRoles.Supplier))
+                {
+                    <a class="btn btn-outline-primary" asp-action="Edit" asp-route-id="@Model.Id"><i class="fas fa-edit"></i> Edit</a>
+                }
+                @if ((Model.Status == ShipmentStatus.InTransit || Model.Status == ShipmentStatus.Delayed) && User.IsInRole(SupplyChainManagement.Models.Enums.UserRoles.WarehouseStaff))
+                {
+                    <form asp-action="MarkDelivered" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Mark Delivered</button>
+                    </form>
+                }
+                @if ((Model.Status == ShipmentStatus.InTransit || Model.Status == ShipmentStatus.Pending) && User.IsInRole(SupplyChainManagement.Models.Enums.UserRoles.Supplier))
+                {
+                    <form asp-action="MarkDelayed" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-warning"><i class="fas fa-clock"></i> Mark Delayed</button>
+                    </form>
+                }
+                @if (Model.Status == ShipmentStatus.Pending && User.IsInRole(SupplyChainManagement.Models.Enums.UserRoles.Supplier))
+                {
+                    <form asp-action="Cancel" method="post" class="d-inline">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <button type="submit" class="btn btn-danger"><i class="fas fa-times"></i> Cancel</button>
+                    </form>
+                }
+                @if (User.IsInRole(SupplyChainManagement.Models.Enums.UserRoles.Supplier))
+                {
+                    <div class="mt-3 small text-muted">
+                        Note: Only Warehouse Staff can mark a shipment as <strong>Delivered</strong>.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

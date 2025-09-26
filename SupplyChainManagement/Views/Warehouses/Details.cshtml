@@ -1,0 +1,102 @@
+@model SupplyChainManagement.Models.Warehouse
+@{
+    ViewData["Title"] = "Warehouse Details";
+    var invCount = Model.Inventories?.Count ?? 0;
+    var staffCount = Model.Staff?.Count ?? 0;
+    var orderCount = Model.Orders?.Count ?? 0;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-2">
+    <h1 class="mb-0"><i class="fas fa-warehouse"></i> Warehouse <span class="badge bg-light text-dark border">#@Model.Id</span></h1>
+    <a class="btn btn-secondary" asp-action="Index"><i class="fas fa-arrow-left"></i> Back</a>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-light"><strong>Summary</strong></div>
+            <div class="card-body">
+                <div class="mb-2"><span class="text-muted small">Name</span><div class="fw-semibold">@Model.Name</div></div>
+                <div class="mb-2"><span class="text-muted small">Location</span><div>@Model.Location</div></div>
+                <div class="mb-2"><span class="text-muted small">Email</span><div>@Model.Email</div></div>
+                <div class="mb-2"><span class="text-muted small">Phone</span><div>@Model.PhoneNumber</div></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-light"><strong>Stats</strong></div>
+            <div class="card-body">
+                <div class="d-flex gap-2 flex-wrap">
+                    <span class="badge bg-light text-dark border">@invCount inventories</span>
+                    <span class="badge bg-light text-dark border">@orderCount orders</span>
+                    <span class="badge bg-light text-dark border">@staffCount staff</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-3 shadow-sm">
+    <div class="card-header">Recent Orders</div>
+    <div class="card-body p-0">
+        @if (!(Model.Orders?.Any() ?? false))
+        {
+            <div class="p-3 text-muted">No orders.</div>
+        }
+        else
+        {
+            <table class="table table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var o in Model.Orders.OrderByDescending(o => o.CreatedAt).Take(10))
+                {
+                    <tr>
+                        <td><span class="badge bg-light text-dark border">#@o.Id</span></td>
+                        <td>@o.Status</td>
+                        <td>@o.CreatedAt.ToLocalTime().ToString("g")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+<div class="card mt-3 shadow-sm">
+    <div class="card-header">Recent Inventories</div>
+    <div class="card-body p-0">
+        @if (!(Model.Inventories?.Any() ?? false))
+        {
+            <div class="p-3 text-muted">No inventories.</div>
+        }
+        else
+        {
+            <table class="table table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th class="text-end">On Hand</th>
+                        <th class="text-end">Available</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var i in Model.Inventories.OrderByDescending(i => i.Id).Take(10))
+                {
+                    <tr>
+                        <td>@i.Product?.Name</td>
+                        <td class="text-end">@i.QuantityOnHand</td>
+                        <td class="text-end">@i.AvailableQuantity</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>

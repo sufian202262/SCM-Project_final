@@ -1,0 +1,49 @@
+@model SupplyChainManagement.Models.Shipment
+@{
+    ViewData["Title"] = "Edit Shipment";
+}
+<h1>Edit Shipment</h1>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Edit">
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="mb-3">
+                <label class="form-label">Order</label>
+                <select asp-for="OrderId" class="form-select" asp-items="ViewBag.OrderId"></select>
+                <span asp-validation-for="OrderId" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Courier" class="form-label"></label>
+                <input asp-for="Courier" class="form-control" />
+                <span asp-validation-for="Courier" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="TrackingNumber" class="form-label"></label>
+                <input asp-for="TrackingNumber" class="form-control" />
+                <span asp-validation-for="TrackingNumber" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Status" class="form-label"></label>
+                <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<SupplyChainManagement.Models.Enums.ShipmentStatus>()"></select>
+                <span asp-validation-for="Status" class="text-danger"></span>
+            </div>
+            <div class="row g-2">
+                <div class="col-md-6">
+                    <label asp-for="ShippedAt" class="form-label"></label>
+                    <input asp-for="ShippedAt" class="form-control" type="datetime-local" />
+                    <span asp-validation-for="ShippedAt" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="DeliveredAt" class="form-label"></label>
+                    <input asp-for="DeliveredAt" class="form-control" type="datetime-local" />
+                    <span asp-validation-for="DeliveredAt" class="text-danger"></span>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary mt-3">Save</button>
+            <a asp-action="Index" class="btn btn-secondary mt-3">Back to List</a>
+        </form>
+    </div>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

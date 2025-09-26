@@ -1,0 +1,98 @@
+@model SupplyChainManagement.Models.InventoryTransaction
+@{
+    ViewData["Title"] = "Transaction Details";
+    string BadgeFor(SupplyChainManagement.Models.InventoryTransactionType type) => type switch
+    {
+        SupplyChainManagement.Models.InventoryTransactionType.Receipt => "bg-success",
+        SupplyChainManagement.Models.InventoryTransactionType.Issue => "bg-danger",
+        SupplyChainManagement.Models.InventoryTransactionType.Adjustment => "bg-warning text-dark",
+        SupplyChainManagement.Models.InventoryTransactionType.TransferIn => "bg-info",
+        SupplyChainManagement.Models.InventoryTransactionType.TransferOut => "bg-secondary",
+        _ => "bg-secondary"
+    };
+    var total = (Model.Product?.Price ?? 0m) * Model.Quantity;
+    var qtyClass = Model.Quantity >= 0 ? "text-success" : "text-danger";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="mb-0"><i class="fas fa-receipt"></i> Transaction <span class="badge bg-light text-dark border">#@Model.Id</span></h1>
+    <div class="btn-group" role="group">
+        <a class="btn btn-secondary" asp-action="Index"><i class="fas fa-arrow-left"></i> Back</a>
+    </div>
+    </div>
+
+<div class="row g-3">
+    <div class="col-lg-7">
+        <div class="card shadow-sm h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong><i class="fas fa-circle-info"></i> Summary</strong>
+                <span class="badge @BadgeFor(Model.Type)">@Model.Type</span>
+            </div>
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Created</dt>
+                    <dd class="col-sm-8">@Model.CreatedAt.ToLocalTime().ToString("g")</dd>
+
+                    <dt class="col-sm-4">Warehouse</dt>
+                    <dd class="col-sm-8">
+                        @Model.Warehouse?.Name
+                        <span class="text-muted">(#@Model.WarehouseId)</span>
+                    </dd>
+
+                    <dt class="col-sm-4">Product</dt>
+                    <dd class="col-sm-8">
+                        @Model.Product?.Name
+                        <span class="text-muted">(#@Model.ProductId)</span>
+                        @if (!string.IsNullOrWhiteSpace(Model.Product?.SKU))
+                        {
+                            <span class="badge bg-light text-dark border ms-1">@Model.Product.SKU</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-4">Unit Price</dt>
+                    <dd class="col-sm-8">@Model.Product?.Price.ToString("C")</dd>
+
+                    <dt class="col-sm-4">Quantity</dt>
+                    <dd class="col-sm-8"><span class="fw-semibold @qtyClass">@Model.Quantity</span></dd>
+
+                    <dt class="col-sm-4">Total Value</dt>
+                    <dd class="col-sm-8 fw-semibold text-nowrap">@total.ToString("C")</dd>
+
+                    <dt class="col-sm-4">Reference</dt>
+                    <dd class="col-sm-8">
+                        @if (!string.IsNullOrWhiteSpace(Model.ReferenceType) && Model.ReferenceId.HasValue)
+                        {
+                            <span class="badge bg-light text-dark border">@Model.ReferenceType</span>
+                            <span class="ms-1">#@Model.ReferenceId</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-4">Performed By</dt>
+                    <dd class="col-sm-8">@(Model.PerformedByUser?.FullName ?? Model.PerformedByUser?.UserName ?? "-")</dd>
+
+                    <dt class="col-sm-4">Notes</dt>
+                    <dd class="col-sm-8">@(string.IsNullOrWhiteSpace(Model.Notes) ? "-" : Model.Notes)</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-light"><strong><i class="fas fa-scale-balanced"></i> Impact</strong></div>
+            <div class="card-body">
+                <p class="mb-2 text-muted">Stock impact for this transaction:</p>
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-1"><i class="fas fa-warehouse text-secondary"></i> Warehouse: <strong>@Model.Warehouse?.Name</strong></li>
+                    <li class="mb-1"><i class="fas fa-box text-secondary"></i> Product: <strong>@Model.Product?.Name</strong></li>
+                    <li class="mb-1"><i class="fas fa-arrows-up-down text-secondary"></i> Quantity change: <span class="fw-semibold @qtyClass">@Model.Quantity</span></li>
+                    <li class="mb-1"><i class="fas fa-coins text-secondary"></i> Value change: <span class="fw-semibold text-nowrap">@total.ToString("C")</span></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,109 @@
+@model IEnumerable<SupplyChainManagement.Models.Order>
+@using SupplyChainManagement.Models.Enums
+
+@{
+    ViewData["Title"] = "Confirm Orders";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Confirmed Orders</h1>
+    <span class="badge bg-success fs-6">@Model.Count() Confirmed</span>
+    </div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> No confirmed orders.
+        <a asp-action="OrdersReceived" class="btn btn-outline-primary btn-sm ms-2">View Orders Received</a>
+    </div>
+}
+else
+{
+    @foreach (var order in Model)
+    {
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="mb-0">Order #@order.Id</h5>
+                        <small class="text-muted">
+                            From: @order.Warehouse?.Name | 
+                            Created: @order.CreatedAt.ToString("MMM dd, yyyy HH:mm") |
+                            Total: @order.TotalAmount.ToString("C")
+                        </small>
+                    </div>
+                    <div class="col-auto">
+                        <span class="badge bg-warning">@order.Status</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <h6>Order Items:</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Quantity</th>
+                                        <th>Unit Price</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in order.Items)
+                                    {
+                                        <tr>
+                                            <td>@item.Product?.Name</td>
+                                            <td>@item.Quantity</td>
+                                            <td>@item.UnitPrice.ToString("C")</td>
+                                            <td>@item.LineTotal.ToString("C")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        @if (!string.IsNullOrEmpty(order.Notes))
+                        {
+                            <div class="mt-3">
+                                <h6>Notes:</h6>
+                                <p class="text-muted">@order.Notes</p>
+                            </div>
+                        }
+                    </div>
+                    <div class="col-md-4">
+                        <div class="d-grid gap-2">
+                            <a href="@Url.Action("Details", "Orders", new { id = order.Id })" class="btn btn-outline-info w-100">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+<div class="mt-4">
+    <a asp-action="OrdersReceived" class="btn btn-outline-primary">
+        <i class="fas fa-arrow-left"></i> Back to All Orders
+    </a>
+</div>

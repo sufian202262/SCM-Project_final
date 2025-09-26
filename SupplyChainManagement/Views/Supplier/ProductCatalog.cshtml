@@ -1,0 +1,118 @@
+@model IEnumerable<SupplyChainManagement.Models.Product>
+
+@{
+    ViewData["Title"] = "Product Catalog";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Product Catalog</h1>
+    <a asp-action="CreateProduct" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Add New Product
+    </a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> No products in your catalog yet.
+        <a asp-action="CreateProduct" class="btn btn-primary btn-sm ms-2">Add Your First Product</a>
+    </div>
+}
+else
+{
+    <div class="row">
+        @foreach (var product in Model)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <strong>@product.Name</strong>
+                        <span class="badge @(product.IsActive ? "bg-success" : "bg-secondary")">
+                            @(product.IsActive ? "Active" : "Inactive")
+                        </span>
+                    </div>
+                    <div class="card-body">
+                        @if (!string.IsNullOrEmpty(product.Description))
+                        {
+                            <p class="card-text">@product.Description</p>
+                        }
+                        <div class="mt-auto">
+                            <h5 class="text-primary">@product.Price.ToString("C")</h5>
+                            <p class="mb-1"><strong>Stock:</strong> @product.StockQuantity @product.UnitOfMeasure</p>
+                            @if (!string.IsNullOrEmpty(product.SKU))
+                            {
+                                <p class="mb-1"><small class="text-muted">SKU: @product.SKU</small></p>
+                            }
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <div class="btn-group w-100" role="group">
+                            <a asp-action="EditProduct" asp-route-id="@product.Id" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            <a href="@Url.Action("Details", "Products", new { id = product.Id })" class="btn btn-outline-info btn-sm">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                            <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal-@product.Id">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Delete Confirmation Modals -->
+    @foreach (var product in Model)
+    {
+        <div class="modal fade" id="deleteModal-@product.Id" tabindex="-1" aria-labelledby="deleteModalLabel-@product.Id" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="deleteModalLabel-@product.Id">Delete Product</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Are you sure you want to delete the product <strong>@product.Name</strong>?</p>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            This action cannot be undone. The product will be permanently removed from your catalog.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <form asp-action="DeleteProduct" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@product.Id" />
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Delete Product
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+}
+
+<div class="mt-4">
+    <a asp-action="OrdersReceived" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Orders
+    </a>
+</div>
